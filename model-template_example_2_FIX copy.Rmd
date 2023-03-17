@@ -34,6 +34,8 @@ bank = read_rds("../BankChurners.rds")
 #my try
 library(forcats)
 library(dplyr)
+
+#EDA
 glimpse(bank)
 sum(is.na(bank))
 dim(bank)
@@ -42,8 +44,7 @@ unique(bank1$Marital_Status)
 unique(bank1$Card_Category)
 unique(bank1$Income_Category)
  
-#"$60K - $80K"    "Less than $40K" "$80K - $120K"   "$40K - $60K"    "$120K +"        "Unknown"
-
+#engineering some features/encoding categorical data
 bank1 <- bank %>%
     mutate(gender = if_else(Gender=="M",1,0)) %>%
     select(-Gender) %>%
@@ -81,7 +82,10 @@ bank1 <- bank %>%
 #to check if any columns have a standard deviation of zero
 zero_sd_cols <- apply(bank, 2, sd) == 0
 
+```
 
+#PCA
+```{r}
 
 #Run the principle component analysis
 pr_bank <- prcomp(x = select(bank1, -Churn), scale = T, center = T)
@@ -93,6 +97,12 @@ screeplot(pr_bank, type = "lines")
 #Visualize biplots
 biplot(pr_bank)
 biplot(pr_bank, choices = c(3,4))
+
+```
+
+
+#Factor loadings
+```{r}
 
 #Factor loadings
 pr_bank$rotation
@@ -109,8 +119,11 @@ pc1_loadings_sorted <- sort(pc1_loadings, decreasing = TRUE)
 
 # Print sorted factor loadings for PC1
 pc1_loadings_sorted
-#
 
+```
+
+#naming components
+```{r}
 
 #Add Churn label to principle components and name them
 prc <- bind_cols(select(bank1,Churn),as.data.frame(pr_bank$x)) %>%
@@ -164,6 +177,11 @@ prc %>%
   geom_density(alpha=0.5)+
   facet_grid(.~component)
 
+```
+
+#highest features
+```{r}
+
 #Find the features with the highest loadings per factor
 rownames_to_column(as.data.frame(pr_bank$rotation)) %>%
   select(1:8) %>%
@@ -198,6 +216,10 @@ prc %>%
 geom_density(alpha=0.5)+
 facet_grid(.~component)
 
+```
+
+#my first model
+```{r}
 
 #Use these factors for prediction
 fit <- train(Churn ~ .,
@@ -211,7 +233,7 @@ confusionMatrix(predict(fit, prc),factor(prc$Churn))
 
 ```
 
-
+#template from Hendrik
 ## Specification
 
 ```{r}

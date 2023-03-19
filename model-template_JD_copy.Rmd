@@ -14,36 +14,16 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Setup
 
 ```{r}
-bank1 = read_rds("../../BankChurners.rds") 
+bank = read_rds("../../BankChurners.rds") 
 ```
 
 
 ## Feature Engineering
 
 ```{r}
-# create some cool features. Make sure you add comments so I know what you are trying to accomplish!
-#banko <- bank %>% 
-#  mutate(age2=Customer_Age^2) %>%
-#  select(Customer_Age, age2, Card_Category, Education_Level, Dependent_count, Churn)
-  # Please do use some PCA! Doesn't have to be all 5 features!
-
-
-
-#print(ncol(banko)) # Only 5 features allowed for project 2! Not counting the dependent variable.
-
-#my try
 library(forcats)
 library(dplyr)
 
-#EDA
-glimpse(bank)
-sum(is.na(bank))
-dim(bank)
-unique(bank1$Education_Level)
-unique(bank1$Marital_Status)
-unique(bank1$Card_Category)
-unique(bank1$Income_Category)
- 
 #engineering some features/encoding categorical data
 bank1 <- bank %>%
     mutate(gender = if_else(Gender=="M",1,0)) %>%
@@ -122,116 +102,48 @@ pc1_loadings_sorted
 
 ```
 
-#naming components
+
+## With engineered features base on higher PC catagories
 ```{r}
+# Credit_Limit
+# Total_Trans_Ct
+# Customer_Age
+# single (---lowers)
+# Total_Revolving_Bal
 
-#Add Churn label to principle components and name them
-prc <- bind_cols(select(bank1,Churn),as.data.frame(pr_bank$x)) %>%
-  select(1:8) %>%
-  rename("blue_util_income" = PC1) %>%
-  rename("big_users" = PC2) %>%
-  rename("older_old_accts" = PC3) %>%
-  rename("single_contacts" = PC4) %>%
-  rename("marriedblue_highuser" = PC5) %>%
-  rename("silver_income" = PC6) %>%
-  rename("highbal_util" = PC7)
-head(prc)
+bankoJD <- bank1 %>% 
+  select(Total_Trans_Amt, Total_Trans_Ct, Customer_Age, Total_Revolving_Bal, Churn)
+  #select(Credit_Limit, Total_Trans_Ct, Customer_Age, Total_Revolving_Bal, Churn)
 
-#Density of different components by churn (Factors 1&2)
-prc %>%
-  select(Churn, blue_util_income, big_users) %>%
-  pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
-  ggplot(aes(loading, fill=Churn))+
-  geom_density(alpha=0.5)+
-  facet_grid(.~component)
-
-#Density of different components by churn (Factors 3&4)
-prc %>%
-  select(Churn, older_old_accts, single_contacts) %>%
-  pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
-  ggplot(aes(loading, fill=Churn))+
-  geom_density(alpha=0.5)+
-  facet_grid(.~component)
-
-#Density of different components by churn (Factors 5&6)
-prc %>%
-  select(Churn, marriedblue_highuser, silver_income) %>%
-  pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
-  ggplot(aes(loading, fill=Churn))+
-  geom_density(alpha=0.5)+
-  facet_grid(.~component)
-
-#Density of different components by churn (Factor 6&7)
-prc %>%
-  select(Churn, silver_income, highbal_util) %>%
-  pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
-  ggplot(aes(loading, fill=Churn))+
-  geom_density(alpha=0.5)+
-  facet_grid(.~component)
-
-#tried all components
-prc %>%
-  select(Churn, blue_util_income, big_users, older_old_accts, single_contacts, marriedblue_highuser, silver_income, highbal_util) %>%
-  pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
-  ggplot(aes(loading, fill=Churn))+
-  geom_density(alpha=0.5)+
-  facet_grid(.~component)
+print(ncol(bankoJD)) # Only 5 features allowed! Not counting the dependent variable.
 
 ```
 
-#highest features
+## Model with engineered features base on higher PC catagories
 ```{r}
+set.seed(504) 
 
-#Find the features with the highest loadings per factor
-rownames_to_column(as.data.frame(pr_bank$rotation)) %>%
-  select(1:8) %>%
-  filter(abs(PC1) >= 0.25 | abs(PC2) >= 0.25 | abs(PC3) >= 0.25 | abs(PC4) >= 0.25 | abs(PC5) >= 0.25 | abs(PC6) >= 0.25 | abs(PC7) >= 0.25)
+ctrl <- trainControl(method = "cv", number = 5, classProbs=TRUE, summaryFunction = twoClassSummary)
 
+bank_index <- createDataPartition(bankoJD$Churn, p = 0.80, list = FALSE)
+train <- bankoJD[ bank_index, ]
+test <- bankoJD[-bank_index, ]
 
-#Name and graph the factors
-prc <- bind_cols(select(bank1,Churn),as.data.frame(pr_bank$x)) %>%
-  select(1:6) %>%
-  rename("name1"=PC1, "name2"=PC2, "name3"=PC3, "name4"=PC4,
-         "name5"=PC5)
-
-
-prc %>%
-  select(Churn, name1,name2) %>%
-  pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
-    ggplot(aes(loading, fill=Churn))+
-geom_density(alpha=0.5)+
-facet_grid(.~component)
-
-prc %>%
-  select(Churn, name3,name4) %>%
-  pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
-    ggplot(aes(loading, fill=Churn))+
-geom_density(alpha=0.5)+
-facet_grid(.~component)
-
-prc %>%
-  select(Churn, name5) %>%
-  pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
-    ggplot(aes(loading, fill=Churn))+
-geom_density(alpha=0.5)+
-facet_grid(.~component)
-
-```
-
-#my first model
-```{r}
-
-#Use these factors for prediction
 fit <- train(Churn ~ .,
-             data = prc,
-             method = "naive_bayes",
+             data = train,
+             method = "rf",
              metric = "Kappa",
-             trControl = trainControl(method = "cv"))
-#kappa .43
-confusionMatrix(predict(fit, prc),factor(prc$Churn))
+             preProcess = c("center", "scale"),
+             trControl = ctrl)
 
+confusionMatrix(predict(fit, test),factor(test$Churn))
 
 ```
+
+
+
+
+
 
 #template from Hendrik
 ## Specification
@@ -239,25 +151,23 @@ confusionMatrix(predict(fit, prc),factor(prc$Churn))
 ```{r}
 # specify the model to be used (i.e. KNN, Naive Bayes, decision tree, random forest, bagged trees) and the tuning parameters used
 
-ctrl <- trainControl(method = "cv", number = 3, classProbs=TRUE, summaryFunction = twoClassSummary)
-set.seed(504) 
+ctrl <- trainControl(method = "cv", number = 5, classProbs=TRUE, summaryFunction = twoClassSummary)
 
-bank_index <- createDataPartition(banko$Churn, p = 0.80, list = FALSE)
-train <- banko[ bank_index, ]
-test <- banko[-bank_index, ]
+bank_index <- createDataPartition(bankoJD$Churn, p = 0.80, list = FALSE)
+train <- bankoJD[ bank_index, ]
+test <- bankoJD[-bank_index, ]
 
 # example spec for rf
 fit <- train(Churn ~ .,
              data = train, 
              method = "rf",
-             ntree = 20, 
-             tuneLength = 3,
              metric = "ROC",
              trControl = ctrl)
 
 fit
 
 confusionMatrix(predict(fit, test),factor(test$Churn))
+
 ```
 
 
@@ -277,9 +187,9 @@ print(fit$bestTune)
 
 set.seed(1504) # I will choose a different seed for evaluation
 
-bank_index <- createDataPartition(banko$Churn, p = 0.80, list = FALSE)
-train <- banko[ bank_index, ]
-test <- banko[-bank_index, ]
+bank_index <- createDataPartition(bankoJD$Churn, p = 0.80, list = FALSE)
+train <- bankoJD[ bank_index, ]
+test <- bankoJD[-bank_index, ]
 
 # example spec for rf
 fit_final <- train(Churn ~ .,

@@ -118,6 +118,27 @@ print(ncol(bankoJD)) # Only 5 features allowed! Not counting the dependent varia
 
 ```
 
+
+## Loading for modified data frame
+```{r}
+#Run the principle component analysis
+pr_bank <- prcomp(x = select(bankoJD, -Churn), scale = T, center = T)
+summary(pr_bank)
+
+head(pr_bank$x)
+
+# Get factor loadings for first principal component
+pc1_loadings <- pr_bank$rotation[, 1]
+
+# Sort factor loadings in descending order
+pc1_loadings_sorted <- sort(pc1_loadings, decreasing = TRUE)
+
+# Print sorted factor loadings for PC1
+pc1_loadings_sorted
+
+```
+
+
 ## Model with engineered features base on higher PC catagories
 ```{r}
 set.seed(504) 
@@ -131,8 +152,8 @@ test <- bankoJD[-bank_index, ]
 fit <- train(Churn ~ .,
              data = train,
              method = "rf",
-             metric = "Kappa",
-             preProcess = c("center", "scale"),
+             metric = "ROC",
+             #preProcess = c("center", "scale"),
              trControl = ctrl)
 
 confusionMatrix(predict(fit, test),factor(test$Churn))

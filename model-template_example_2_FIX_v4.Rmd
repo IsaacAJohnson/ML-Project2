@@ -14,7 +14,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Setup
 
 ```{r}
-bank = read_rds("../../BankChurners.rds") 
+#bank = read_rds("../../BankChurners.rds") 
+bank = read_rds("../BankChurners.rds") 
 ```
 
 

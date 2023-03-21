@@ -39,10 +39,10 @@ library(dplyr)
 glimpse(bank)
 sum(is.na(bank))
 dim(bank)
-unique(bank1$Education_Level)
-unique(bank1$Marital_Status)
-unique(bank1$Card_Category)
-unique(bank1$Income_Category)
+unique(bank$Education_Level)
+unique(bank$Marital_Status)
+unique(bank$Card_Category)
+unique(bank$Income_Category)
  
 #engineering some features/encoding categorical data
 bank1 <- bank %>%
@@ -121,25 +121,74 @@ pc1_loadings_sorted <- sort(pc1_loadings, decreasing = TRUE)
 pc1_loadings_sorted
 
 ```
+#PCA 2
+```{r}
+#PCA2
+# Get factor loadings for first principal component
+pc2_loadings <- pr_bank$rotation[, 2]
+
+# Sort factor loadings in descending order
+pc2_loadings_sorted <- sort(pc2_loadings, decreasing = TRUE)
+
+# Print sorted factor loadings for PC2
+pc2_loadings_sorted
+```
+#PCA 3
+```{r}
+#PCA2
+# Get factor loadings for first principal component
+pc3_loadings <- pr_bank$rotation[, 3]
+
+# Sort factor loadings in descending order
+pc3_loadings_sorted <- sort(pc3_loadings, decreasing = TRUE)
+
+# Print sorted factor loadings for PC3
+pc3_loadings_sorted
+```
+
+#PCA4
+```{r}
+#PCA2
+# Get factor loadings for first principal component
+pc4_loadings <- pr_bank$rotation[, 4]
+
+# Sort factor loadings in descending order
+pc4_loadings_sorted <- sort(pc4_loadings, decreasing = TRUE)
+
+# Print sorted factor loadings for PC4
+pc4_loadings_sorted
+```
+#PCA5
+```{r}
+#PCA2
+# Get factor loadings for first principal component
+pc5_loadings <- pr_bank$rotation[, 5]
+
+# Sort factor loadings in descending order
+pc5_loadings_sorted <- sort(pc5_loadings, decreasing = TRUE)
+
+# Print sorted factor loadings for PC5
+pc5_loadings_sorted
+```
+
+
 
 #naming components
 ```{r}
 
 #Add Churn label to principle components and name them
 prc <- bind_cols(select(bank1,Churn),as.data.frame(pr_bank$x)) %>%
-  select(1:8) %>%
-  rename("blue_util_income" = PC1) %>%
-  rename("big_users" = PC2) %>%
-  rename("older_old_accts" = PC3) %>%
-  rename("single_contacts" = PC4) %>%
-  rename("marriedblue_highuser" = PC5) %>%
-  rename("silver_income" = PC6) %>%
-  rename("highbal_util" = PC7)
+  select(1:6) %>%
+  rename("bluesilver_avgopen_credit" = PC1) %>%
+  rename("high_user" = PC2) %>%
+  rename("older_oldacct" = PC3) %>%
+  rename("single_highbalance" = PC4) %>%
+  rename("highbal_utilratio" = PC5)
 head(prc)
 
 #Density of different components by churn (Factors 1&2)
 prc %>%
-  select(Churn, blue_util_income, big_users) %>%
+  select(Churn, bluesilver_avgopen_credit, high_user) %>%
   pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
   ggplot(aes(loading, fill=Churn))+
   geom_density(alpha=0.5)+
@@ -147,23 +196,15 @@ prc %>%
 
 #Density of different components by churn (Factors 3&4)
 prc %>%
-  select(Churn, older_old_accts, single_contacts) %>%
+  select(Churn, older_oldacct, single_highbalance) %>%
   pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
   ggplot(aes(loading, fill=Churn))+
   geom_density(alpha=0.5)+
   facet_grid(.~component)
 
-#Density of different components by churn (Factors 5&6)
+#Density of different components by churn (Factors 4&5)
 prc %>%
-  select(Churn, marriedblue_highuser, silver_income) %>%
-  pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
-  ggplot(aes(loading, fill=Churn))+
-  geom_density(alpha=0.5)+
-  facet_grid(.~component)
-
-#Density of different components by churn (Factor 6&7)
-prc %>%
-  select(Churn, silver_income, highbal_util) %>%
+  select(Churn, single_highbalance, highbal_utilratio) %>%
   pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
   ggplot(aes(loading, fill=Churn))+
   geom_density(alpha=0.5)+
@@ -171,7 +212,7 @@ prc %>%
 
 #tried all components
 prc %>%
-  select(Churn, blue_util_income, big_users, older_old_accts, single_contacts, marriedblue_highuser, silver_income, highbal_util) %>%
+  select(Churn, bluesilver_avgopen_credit, high_user, older_oldacct, single_highbalance, highbal_utilratio) %>%
   pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
   ggplot(aes(loading, fill=Churn))+
   geom_density(alpha=0.5)+
@@ -184,33 +225,33 @@ prc %>%
 
 #Find the features with the highest loadings per factor
 rownames_to_column(as.data.frame(pr_bank$rotation)) %>%
-  select(1:8) %>%
-  filter(abs(PC1) >= 0.25 | abs(PC2) >= 0.25 | abs(PC3) >= 0.25 | abs(PC4) >= 0.25 | abs(PC5) >= 0.25 | abs(PC6) >= 0.25 | abs(PC7) >= 0.25)
+  select(1:6) %>%
+  filter(abs(PC1) >= 0.25 | abs(PC2) >= 0.25 | abs(PC3) >= 0.25 | abs(PC4) >= 0.25 | abs(PC5) >= 0.25)
 
 
 #Name and graph the factors
 prc <- bind_cols(select(bank1,Churn),as.data.frame(pr_bank$x)) %>%
-  select(1:8) %>%
-  rename("name1"=PC1, "name2"=PC2, "name3"=PC3, "name4"=PC4,
-         "name5"=PC5, "name6"=PC6, "name7"=PC7)
+  select(1:6) %>%
+  rename("bluesilver_avgopen_credit"=PC1, "high_user"=PC2, "older_oldacct"=PC3, "single_highbalance"=PC4,
+         "highbal_utilratio"=PC5)
 
 
 prc %>%
-  select(Churn, name1,name2) %>%
+  select(Churn, bluesilver_avgopen_credit,high_user) %>%
   pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
     ggplot(aes(loading, fill=Churn))+
 geom_density(alpha=0.5)+
 facet_grid(.~component)
 
 prc %>%
-  select(Churn, name3,name4) %>%
+  select(Churn, older_oldacct,single_highbalance) %>%
   pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
     ggplot(aes(loading, fill=Churn))+
 geom_density(alpha=0.5)+
 facet_grid(.~component)
 
 prc %>%
-  select(Churn, name5,name6, name7) %>%
+  select(Churn, highbal_utilratio) %>%
   pivot_longer(cols = -Churn,names_to = "component",values_to = "loading") %>%
     ggplot(aes(loading, fill=Churn))+
 geom_density(alpha=0.5)+
@@ -224,7 +265,7 @@ facet_grid(.~component)
 #Use these factors for prediction
 fit <- train(Churn ~ .,
              data = prc,
-             method = "naive_bayes",
+             method = "rf",
              metric = "Kappa",
              trControl = trainControl(method = "cv"))
 #kappa .43

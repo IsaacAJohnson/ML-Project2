@@ -80,6 +80,7 @@ bank2 <- bank1 %>%
     mutate(churn = if_else(Churn=="yes",1,0)) %>%
     select(-Churn)
 
+#looked for correlations
 round(cor(bank2), digits = 2)
 
 cor(bank2$churn, bank2$Total_Trans_Ct)
@@ -92,6 +93,7 @@ cor(bank2$churn, bank2$Contacts_Count_12_mon)
 # bank3 <- bank1 %>%
 #     select(Churn, Total_Trans_Ct, Total_Ct_Chng_Q4_Q1, Total_Revolving_Bal, Total_Relationship_Count, Contacts_Count_12_mon)
 
+#in the end the best features came from just using the regular variables.
 bank3 <- bank1 %>% 
   select(Credit_Limit, Customer_Age, Total_Revolving_Bal, Total_Trans_Ct,
          Total_Trans_Amt, Churn)

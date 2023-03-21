@@ -153,9 +153,9 @@ print(fit$bestTune)
 
 set.seed(1504) # I will choose a different seed for evaluation
 
-bank_index <- createDataPartition(bank3$Churn, p = 0.80, list = FALSE)
-train <- bank3[ bank_index, ]
-test <- bank3[-bank_index, ]
+bank_index <- createDataPartition(bank4$Churn, p = 0.80, list = FALSE)
+train <- bank4[ bank_index, ]
+test <- bank4[-bank_index, ]
 
 # example spec for rf
 fit_final <- train(Churn ~ .,

@@ -100,9 +100,9 @@ print(ncol(bank3)) # Only 5 features allowed for project 2! Not counting the dep
 library(dplyr)
 
 bank4 <- bank1 %>% 
-  mutate(married40highbal = ifelse(Customer_Age > 40 & married == 1 & Total_Revolving_Bal > 1000, 1, 0)) %>%
-    mutate(highcreditBlue = ifelse(Credit_Limit>10000 & Avg_Open_To_Buy>1000 & blue == 1, 1, 0)) %>%
-    
+  mutate(singleMBlue = ifelse(single == 1 & blue == 1, 1, 0)) %>%
+    mutate(silverlowcredit = ifelse(Credit_Limit<10000 & Avg_Open_To_Buy<10000 & silver == 1, 1, 0)) %>%
+    select(silverlowcredit, singleMBlue, Total_Trans_Ct, Total_Trans_Amt, Churn)
 
 
 ```
@@ -118,9 +118,9 @@ bank4 <- bank1 %>%
 ctrl <- trainControl(method = "cv", number = 3, classProbs = TRUE, summaryFunction = twoClassSummary)
 set.seed(504) 
 
-bank_index <- createDataPartition(bank3$Churn, p = 0.80, list = FALSE)
-train <- bank3[ bank_index, ]
-test <- bank3[-bank_index, ]
+bank_index <- createDataPartition(bank4$Churn, p = 0.80, list = FALSE)
+train <- bank4[ bank_index, ]
+test <- bank4[-bank_index, ]
 
 # example spec for rf
 fit <- train(Churn ~ .,

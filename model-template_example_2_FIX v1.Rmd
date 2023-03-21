@@ -43,8 +43,13 @@ unique(bank$Education_Level)
 unique(bank$Marital_Status)
 unique(bank$Card_Category)
 unique(bank$Income_Category)
- 
-#engineering some features/encoding categorical data
+
+bank %>%
+    group_by(Churn) %>%
+    count()
+
+#engineering some features
+#encoding categorical data
 bank1 <- bank %>%
     mutate(gender = if_else(Gender=="M",1,0)) %>%
     select(-Gender) %>%
@@ -78,9 +83,6 @@ bank1 <- bank %>%
            as.integer()) %>%
     select(-Income_Category)
     
-
-#to check if any columns have a standard deviation of zero
-zero_sd_cols <- apply(bank, 2, sd) == 0
 
 ```
 

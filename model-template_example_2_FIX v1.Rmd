@@ -160,7 +160,7 @@ pc4_loadings_sorted
 ```
 #PCA5
 ```{r}
-#PCA2
+#PCA5
 # Get factor loadings for first principal component
 pc5_loadings <- pr_bank$rotation[, 5]
 
